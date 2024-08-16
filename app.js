@@ -1,31 +1,34 @@
-const express = require('express')
-const app = express()
+const express = require('express');
+const mongoose = require('mongoose');
+const db = require("./src/server/keys.js").mongoURI;
+const createServer = require("./src/server/createServer.js")
+
+
+const PORT  = process.env.PORT || 3000;
+const app = express();
+
 
 // middleware 
 
-app.use(function(req,res,next){
-    console.log("middleware chal raha");
-    next();
-})
-
-app.get("/", function(req, res){
-    res.send("This is the landing page");
-})
+app.use(express.json());
+app.use(express.urlencoded({extended:true}))
 
 
-app.get("/profile", function(req, res){
-    res.send("This is profile page");
+mongoose
+  .connect(db)
+  .then(()=>{
+    const app = createServer();
+    const port = process.env.PORT || 3000;
+    app.listen(port, ()=>{
+        console.log(`App is running on port ${port}`)
+    })
+  }).catch((err)=>{
+    console.log(`could not connect to MongoDB and start the server`);
+    console.log(err);
+  })
+
+
+
+app.listen(PORT, "0.0.0.0",()=>{
+    console.log(`connected at port ${PORT}`);
 });
-
-app.get("/about", function(req, res , next){
-    return next(new Error("something went wrong"));
-    
-});
-
-app.use(function(errm,req,res,next){
-    console.error(errm.stack)
-    res.status(500).send('Something broke')
-
-})
-
-app.listen(3000);
